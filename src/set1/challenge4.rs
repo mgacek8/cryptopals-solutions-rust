@@ -3,7 +3,7 @@ use super::challenge3;
 
 #[allow(dead_code)]
 pub fn detect_single_character_xor() -> String {
-    let content = std::fs::read_to_string("4.txt").unwrap();
+    let content = std::fs::read_to_string("data/4.txt").unwrap();
 
     let mut score = 0;
     let mut deciphered = "".to_string();
