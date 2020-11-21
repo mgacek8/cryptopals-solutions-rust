@@ -6,7 +6,7 @@ pub struct SingleByteXorResult {
 }
 
 #[allow(dead_code)]
-pub fn detect_single_byte_xor_cipher(decrypted: &[u8]) -> SingleByteXorResult {
+pub fn detect_single_byte_xor_cipher(encrypted: &[u8]) -> SingleByteXorResult {
     fn calc_score(s: &str) -> usize {
           s
             .chars()
@@ -18,7 +18,7 @@ pub fn detect_single_byte_xor_cipher(decrypted: &[u8]) -> SingleByteXorResult {
     let mut max_score_byte = 0u8;
     let mut max_score_result = String::new();
     for key in 0..255 {
-        let result_vec: Vec<u8> = decrypted.iter().map(|a| key ^ *a).collect();
+        let result_vec: Vec<u8> = encrypted.iter().map(|a| key ^ *a).collect();
 
         let result = match std::str::from_utf8(result_vec.as_slice()) {
             Ok(value) => value,
