@@ -8,8 +8,7 @@ pub struct SingleByteXorResult {
 #[allow(dead_code)]
 pub fn detect_single_byte_xor_cipher(encrypted: &[u8]) -> SingleByteXorResult {
     fn calc_score(s: &str) -> usize {
-          s
-            .chars()
+        s.chars()
             .filter(|&x| x.is_ascii_alphabetic() || x == ' ')
             .count()
     }
