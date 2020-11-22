@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 pub fn repeating_key_xor_v2(to_cipher: &[u8], key: &str) -> Vec<u8> {
     let mut key_range = (0..key.len()).cycle();
     let encripted: Vec<u8> = to_cipher
@@ -12,7 +11,6 @@ pub fn repeating_key_xor_v2(to_cipher: &[u8], key: &str) -> Vec<u8> {
     encripted
 }
 
-#[allow(dead_code)]
 pub fn repeating_key_xor(to_cipher: &[u8], key: &str) -> Vec<u8> {
     let mut encripted: Vec<u8> = vec![];
 

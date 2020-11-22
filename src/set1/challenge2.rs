@@ -1,7 +1,6 @@
 use super::challenge1;
 
 /// Takes two equal-length buffers and produces their XOR combination.
-#[allow(dead_code)]
 pub fn fixed_xor(s1: &str, s2: &str) -> String {
     let s1_bytes = challenge1::hex_to_bytes(s1);
     let s2_bytes = challenge1::hex_to_bytes(s2);

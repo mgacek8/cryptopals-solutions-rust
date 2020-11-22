@@ -1,11 +1,9 @@
-#[allow(dead_code)]
 pub struct SingleByteXorResult {
     pub key: u8,
     pub result_string: String,
     pub score: usize,
 }
 
-#[allow(dead_code)]
 pub fn detect_single_byte_xor_cipher(encrypted: &[u8]) -> SingleByteXorResult {
     fn calc_score(s: &str) -> usize {
         s.chars()

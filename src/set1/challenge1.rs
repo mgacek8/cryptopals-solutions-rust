@@ -1,12 +1,10 @@
 extern crate base64;
 
-#[allow(dead_code)]
 pub fn hex_to_base64(hex: &str) -> String {
     let bytes_from_hex = hex_to_bytes(hex);
     base64::encode(&bytes_from_hex)
 }
 
-#[allow(dead_code)]
 pub fn hex_to_bytes(hex: &str) -> Vec<u8> {
     hex.as_bytes()
         .chunks(2)
