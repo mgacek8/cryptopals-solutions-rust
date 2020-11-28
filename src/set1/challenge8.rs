@@ -14,7 +14,8 @@ pub fn detect_ecb_aes(file_path: &str) -> Result<String, Box<dyn std::error::Err
         let decoded = hex::decode(line.as_bytes())?;
 
         let mut score = 0;
-        // Remember that the problem with ECB is that it is stateless and deterministic; the same 16 byte plaintext block will always produce the same 16 byte ciphertext.
+        // Remember that the problem with ECB is that it is stateless and deterministic;
+        // the same 16 byte plaintext block will always produce the same 16 byte ciphertext.
         let mut chunks_to_check: Vec<&[u8]> = decoded.chunks(AES_BLOCK_SIZE_IN_BYTES).collect();
         for chunk in decoded.chunks(AES_BLOCK_SIZE_IN_BYTES) {
             // No more elements to check

@@ -87,10 +87,7 @@ mod tests {
 
     #[test]
     fn can_calculate_hamming_distance() {
-        assert_eq!(
-            hamming_distance(b"this is a test", b"wokka wokka!!!"),
-            37
-        );
+        assert_eq!(hamming_distance(b"this is a test", b"wokka wokka!!!"), 37);
     }
 
     #[test]

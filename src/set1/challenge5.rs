@@ -1,6 +1,6 @@
 pub fn repeating_key_xor_v2(to_cipher: &[u8], key: &str) -> Vec<u8> {
     let mut key_range = (0..key.len()).cycle();
-    let encripted: Vec<u8> = to_cipher
+    let encrypted: Vec<u8> = to_cipher
         .iter()
         .map(|byte| {
             let val = key.as_bytes()[key_range.next().unwrap()] ^ byte;
@@ -8,15 +8,15 @@ pub fn repeating_key_xor_v2(to_cipher: &[u8], key: &str) -> Vec<u8> {
         })
         .collect();
 
-    encripted
+    encrypted
 }
 
 pub fn repeating_key_xor(to_cipher: &[u8], key: &str) -> Vec<u8> {
-    let mut encripted: Vec<u8> = vec![];
+    let mut encrypted: Vec<u8> = vec![];
 
     let mut i = 0;
     for byte in to_cipher {
-        encripted.push(key.as_bytes()[i] ^ byte);
+        encrypted.push(key.as_bytes()[i] ^ byte);
 
         i += 1;
         if i >= key.len() {
@@ -24,7 +24,7 @@ pub fn repeating_key_xor(to_cipher: &[u8], key: &str) -> Vec<u8> {
         }
     }
 
-    encripted
+    encrypted
 }
 
 #[cfg(test)]
