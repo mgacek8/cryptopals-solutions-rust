@@ -19,6 +19,11 @@ pub fn pkcs_7(data: &[u8], padding_size: usize) -> Vec<u8> {
     padded_data
 }
 
+pub fn pkcs_7_unpad(data: &[u8]) -> Vec<u8> {
+    let last = data.last().unwrap_or(&0);
+    data[..data.len() - *last as usize].to_vec()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -46,6 +51,26 @@ mod tests {
         assert_eq!(
             pkcs_7(b"YELLOW SUBMARINE", 4),
             b"YELLOW SUBMARINE\x04\x04\x04\x04"
+        );
+    }
+
+    #[test]
+    fn can_unpad_pkcs_7() {
+        assert_eq!(
+            pkcs_7_unpad(b"YELLOW S\x08\x08\x08\x08\x08\x08\x08\x08"),
+            b"YELLOW S"
+        );
+        assert_eq!(
+            pkcs_7_unpad(b"YELLOW SUBMARINE\x04\x04\x04\x04"),
+            b"YELLOW SUBMARINE"
+        );
+        assert_eq!(
+            pkcs_7_unpad(b""),
+            b""
+        );
+        assert_eq!(
+            pkcs_7_unpad(b"YELLOW SUBMARINE\x04\x04\x04\x04"),
+            b"YELLOW SUBMARINE"
         );
     }
 }

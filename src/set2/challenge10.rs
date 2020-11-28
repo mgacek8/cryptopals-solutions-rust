@@ -1,8 +1,8 @@
-use crate::set1::challenge7;
 use crate::set1::helpers;
+use crate::set2::challenge09;
 
 use lazy_static::lazy_static;
-use openssl::symm::{encrypt, Cipher};
+use openssl::symm::{encrypt, Cipher, Crypter, Mode};
 
 fn encrypt_aes_ecb(data: &[u8], key: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     lazy_static! {
@@ -13,27 +13,37 @@ fn encrypt_aes_ecb(data: &[u8], key: &[u8]) -> Result<Vec<u8>, Box<dyn std::erro
     Ok(encrypted)
 }
 
-// Doesnt work: panics. ERROR:
-// thread 'set2::challenge10::tests::can_decrypt_aes_cbc' panicked at 'called `Result::unwrap()` on an `Err` value: ErrorStack([Error { code: 101077092, library: "digital envelope routines", function: "EVP_DecryptFinal_ex", reason: "bad decrypt", file: "crypto\\evp\\evp_enc.c", line: 583 }])', src\set2\challenge10.rs:25:71
 pub fn decrypt_aes_cbc(data: &[u8], key: &[u8], iv: &[u8]) -> Vec<u8> {
     let block_size = 16;
     let mut cipher_text_to_xor = iv.to_vec();
     let mut plain_bytes = vec![];
     for chunk in data.chunks(block_size) {
-        let half_decrypted = challenge7::decrypt_aes_ecb(&chunk, key).unwrap();
+        let half_decrypted = decrypt_aes_ecb_no_padding(&chunk, key);
         let decrypted = helpers::fixed_xor_bytes(&half_decrypted, &cipher_text_to_xor);
- 
-
-        cipher_text_to_xor = chunk.to_vec();
         plain_bytes.extend_from_slice(&decrypted);
+        cipher_text_to_xor = chunk.to_vec();
     }
 
-    plain_bytes
+    challenge09::pkcs_7_unpad(&plain_bytes)
+}
+
+pub fn decrypt_aes_ecb_no_padding(data: &[u8], key: &[u8]) -> Vec<u8> {
+    let mut decrypter = Crypter::new(Cipher::aes_128_ecb(), Mode::Decrypt, key, None).unwrap();
+
+    let block_size = Cipher::aes_128_cbc().block_size();
+    decrypter.pad(false);
+
+    let mut plaintext = vec![0; data.len() + block_size];
+    let count = decrypter.update(data, &mut plaintext).unwrap();
+    plaintext.truncate(count);
+
+    plaintext
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::set1::challenge7;
     use crate::set1::helpers;
 
     #[test]
@@ -48,15 +58,15 @@ mod tests {
     }
 
     #[test]
-    fn can_decrypt_aes_cbc() {
+    fn can_encrypt_aes_cbc_no_padding() {
         let key = b"YELLOW SUBMARINE";
         let iv = [0; 128];
         let data = helpers::read_and_decode_from_file("data/10.txt").unwrap();
 
         let plain_bytes = decrypt_aes_cbc(&data, key, &iv.to_vec());
-        println!(
-            "plain text: {}",
-            std::str::from_utf8(&plain_bytes).unwrap().to_string()
-        );
+        let result = std::str::from_utf8(&plain_bytes).unwrap().to_string();
+        let expected = std::fs::read_to_string("data/vanilla_ice.txt").unwrap();
+
+        assert_eq!(expected, result);
     }
 }
