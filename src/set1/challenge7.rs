@@ -9,7 +9,7 @@ pub fn decrypt_aes_ecb(data: &[u8], key: &[u8]) -> Result<Vec<u8>, Box<dyn std::
     Ok(decrypt)
 }
 
-pub fn read_and_decode_from_file(path : &str) -> Vec<u8> {
+pub fn read_and_decode_from_file(path: &str) -> Vec<u8> {
     let data = std::fs::read_to_string(path).unwrap();
     let data: String = data.split("\n").collect();
     let data = base64::decode(data).unwrap();
