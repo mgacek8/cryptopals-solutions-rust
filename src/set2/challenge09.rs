@@ -64,10 +64,7 @@ mod tests {
             pkcs_7_unpad(b"YELLOW SUBMARINE\x04\x04\x04\x04"),
             b"YELLOW SUBMARINE"
         );
-        assert_eq!(
-            pkcs_7_unpad(b""),
-            b""
-        );
+        assert_eq!(pkcs_7_unpad(b""), b"");
         assert_eq!(
             pkcs_7_unpad(b"YELLOW SUBMARINE\x04\x04\x04\x04"),
             b"YELLOW SUBMARINE"

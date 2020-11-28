@@ -58,7 +58,7 @@ mod tests {
     }
 
     #[test]
-    fn can_encrypt_aes_cbc_no_padding() {
+    fn can_decrypt_aes_cbc_no_padding() {
         let key = b"YELLOW SUBMARINE";
         let iv = [0; 128];
         let data = helpers::read_and_decode_from_file("data/10.txt").unwrap();
