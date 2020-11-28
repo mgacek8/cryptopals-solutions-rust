@@ -1,5 +1,6 @@
 use super::challenge3;
 use super::challenge5;
+use super::helpers;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -18,10 +19,7 @@ pub struct DecryptedResult {
 }
 
 pub fn break_repeating_key_xor() -> DecryptedResult {
-    let content = std::fs::read_to_string("data/6.txt").unwrap();
-    let content = content.split('\n');
-    let content: String = content.collect();
-    let ciphertext = base64::decode(content).unwrap();
+    let ciphertext = helpers::read_and_decode_from_file("data/6.txt").unwrap();
 
     let mut min_distance = std::f32::MAX;
     let mut guessed_keysize = 0;
