@@ -6,7 +6,7 @@ pub fn detect_single_character_xor() -> String {
 
     let mut score = 0;
     let mut deciphered = "".to_string();
-    for line in content.split("\n") {
+    for line in content.split('\n') {
         let result =
             challenge3::detect_single_byte_xor_cipher(challenge1::hex_to_bytes(line).as_slice());
         if score < result.score {

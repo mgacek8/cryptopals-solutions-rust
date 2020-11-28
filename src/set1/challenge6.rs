@@ -19,7 +19,7 @@ pub struct DecryptedResult {
 
 pub fn break_repeating_key_xor() -> DecryptedResult {
     let content = std::fs::read_to_string("data/6.txt").unwrap();
-    let content = content.split("\n");
+    let content = content.split('\n');
     let content: String = content.collect();
     let ciphertext = base64::decode(content).unwrap();
 
@@ -71,7 +71,7 @@ pub fn break_repeating_key_xor() -> DecryptedResult {
     let decrypted_content = std::str::from_utf8(decripted.as_slice()).unwrap();
 
     DecryptedResult {
-        key: key,
+        key,
         content: decrypted_content.to_string(),
     }
 }
@@ -90,7 +90,7 @@ mod tests {
     #[test]
     fn can_calculate_hamming_distance() {
         assert_eq!(
-            hamming_distance("this is a test".as_bytes(), "wokka wokka!!!".as_bytes()),
+            hamming_distance(b"this is a test", b"wokka wokka!!!"),
             37
         );
     }
