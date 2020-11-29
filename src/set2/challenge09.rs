@@ -2,14 +2,7 @@
 ///
 /// PKCS#7 padding is defined in [RFC 5652](https://tools.ietf.org/html/rfc5652#section-6.3).
 pub fn pkcs_7(data: &[u8], padding_size: usize) -> Vec<u8> {
-    let bytes_to_pad = {
-        let modulo = padding_size % data.len();
-        if modulo == 0 {
-            padding_size
-        } else {
-            modulo
-        }
-    };
+    let bytes_to_pad = padding_size - (data.len() % padding_size);
 
     let mut padded_data = data.to_vec();
     for _ in 0..bytes_to_pad {
@@ -37,6 +30,10 @@ mod tests {
         assert_eq!(
             pkcs_7(b"YELLOW SUBMARINE12", 20),
             b"YELLOW SUBMARINE12\x02\x02"
+        );
+        assert_eq!(
+            pkcs_7(b"Test", 16),
+            b"Test\x0c\x0c\x0c\x0c\x0c\x0c\x0c\x0c\x0c\x0c\x0c\x0c"
         );
     }
 
@@ -69,5 +66,12 @@ mod tests {
             pkcs_7_unpad(b"YELLOW SUBMARINE\x04\x04\x04\x04"),
             b"YELLOW SUBMARINE"
         );
+    }
+
+    #[test]
+    fn can_pan_and_unpad_pkcs_7() {
+        let test_data = b"Test with some info.....";
+        let padded = pkcs_7(test_data, 16);
+        assert_eq!(pkcs_7_unpad(&padded), test_data);
     }
 }
