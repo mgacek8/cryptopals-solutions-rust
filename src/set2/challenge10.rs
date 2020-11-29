@@ -4,7 +4,7 @@ use crate::set2::challenge09;
 use lazy_static::lazy_static;
 use openssl::symm::{encrypt, Cipher, Crypter, Mode};
 
-fn encrypt_aes_ecb(data: &[u8], key: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub fn encrypt_aes_ecb(data: &[u8], key: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     lazy_static! {
         static ref CIPHER: Cipher = Cipher::aes_128_ecb();
     }
@@ -13,31 +13,60 @@ fn encrypt_aes_ecb(data: &[u8], key: &[u8]) -> Result<Vec<u8>, Box<dyn std::erro
     Ok(encrypted)
 }
 
-pub fn decrypt_aes_cbc(data: &[u8], key: &[u8], iv: &[u8]) -> Vec<u8> {
+pub fn decrypt_aes_cbc(
+    data: &[u8],
+    key: &[u8],
+    iv: &[u8],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let block_size = 16;
-    let mut cipher_text_to_xor = iv.to_vec();
+    let mut next_iv = iv.to_vec();
     let mut plain_bytes = vec![];
     for chunk in data.chunks(block_size) {
-        let half_decrypted = decrypt_aes_ecb_no_padding(&chunk, key);
-        let decrypted = helpers::fixed_xor_bytes(&half_decrypted, &cipher_text_to_xor);
+        let half_decrypted = aes_ecb_no_padding(Mode::Decrypt, &chunk, key)?;
+        let decrypted = helpers::fixed_xor_bytes(&half_decrypted, &next_iv);
         plain_bytes.extend_from_slice(&decrypted);
-        cipher_text_to_xor = chunk.to_vec();
+        next_iv = chunk.to_vec();
     }
 
-    challenge09::pkcs_7_unpad(&plain_bytes)
+    Ok(challenge09::pkcs_7_unpad(&plain_bytes))
 }
 
-pub fn decrypt_aes_ecb_no_padding(data: &[u8], key: &[u8]) -> Vec<u8> {
-    let mut decrypter = Crypter::new(Cipher::aes_128_ecb(), Mode::Decrypt, key, None).unwrap();
+pub fn encrypt_aes_cbc(
+    data: &[u8],
+    key: &[u8],
+    iv: &[u8],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let block_size = 16;
+    let padded = challenge09::pkcs_7(&data, block_size);
+    let mut next_iv = iv.to_vec();
+    let mut cipher_text = vec![];
+    for chunk in padded.chunks(block_size) {
+        let xored = helpers::fixed_xor_bytes(&chunk, &next_iv);
+        let encrypted_chunk = aes_ecb_no_padding(Mode::Encrypt, &xored, key)?;
+        cipher_text.extend_from_slice(&encrypted_chunk);
+        next_iv = encrypted_chunk;
+    }
 
-    let block_size = Cipher::aes_128_cbc().block_size();
-    decrypter.pad(false);
+    Ok(cipher_text)
+}
 
-    let mut plaintext = vec![0; data.len() + block_size];
-    let count = decrypter.update(data, &mut plaintext).unwrap();
-    plaintext.truncate(count);
+pub fn aes_ecb_no_padding(
+    mode: Mode,
+    data: &[u8],
+    key: &[u8],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    lazy_static! {
+        static ref CIPHER: Cipher = Cipher::aes_128_ecb();
+    }
+    let mut crypter = Crypter::new(*CIPHER, mode, key, None)?;
 
-    plaintext
+    crypter.pad(false);
+
+    let mut result = vec![0; data.len() + CIPHER.block_size()];
+    let count = crypter.update(data, &mut result)?;
+    result.truncate(count);
+
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -58,15 +87,30 @@ mod tests {
     }
 
     #[test]
-    fn can_decrypt_aes_cbc_no_padding() {
+    fn can_decrypt_aes_cbc() {
         let key = b"YELLOW SUBMARINE";
         let iv = [0; 128];
         let data = helpers::read_and_decode_from_file("data/10.txt").unwrap();
 
-        let plain_bytes = decrypt_aes_cbc(&data, key, &iv.to_vec());
+        let plain_bytes = decrypt_aes_cbc(&data, key, &iv).unwrap();
         let result = std::str::from_utf8(&plain_bytes).unwrap().to_string();
         let expected = std::fs::read_to_string("data/vanilla_ice.txt").unwrap();
 
         assert_eq!(expected, result);
+    }
+
+    // parametrized tests with https://crates.io/crates/rstest
+    #[test]
+    fn can_encrypt_and_decrypt_aes_cbc() {
+        // let plain_text = b"Test with ";
+        let plain_text = b"Test with some i";
+        let key = b"YELLOW SUBMARINE";
+        let iv = [0; 128];
+
+        let cipher_text = encrypt_aes_cbc(plain_text, key, &iv).unwrap();
+        let decrypted = decrypt_aes_cbc(&cipher_text, key, &iv).unwrap();
+
+        assert_eq!(plain_text.to_vec(), decrypted);
+        assert_ne!(cipher_text.to_vec(), decrypted);
     }
 }
